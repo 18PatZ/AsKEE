@@ -1,28 +1,41 @@
 package lah;
 
+import com.sun.imageio.plugins.gif.GIFImageReader;
+import com.sun.imageio.plugins.gif.GIFImageReaderSpi;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class ConversionUtil {
 
     //private static List<String> chars = Arrays.asList(" ", "`", "-", ".", "'", "_", ":", ",", "\"", "=", "^", ";", "+", "!", "*", "?", "/", "c", "L", "\\", "z", "r", "s", "7", "T", "i", "v", "J", "t", "C", "{", "3", "F", ")", "I", "l", "(", "x", "Z", "f", "Y", "5", "S", "2", "e", "a", "j", "o", "1", "4", "[", "n", "u", "y", "E", "]", "P", "6", "V", "9", "k", "X", "p", "K", "w", "G", "h", "q", "A", "U", "b", "O", "d", "8", "#", "H", "R", "D", "B", "0", "$", "m", "g", "M", "W", "&", "Q", "%", "N", "@");
-    private static List<String> chars = Arrays.asList(" ", ".", "-", ":", "=", "+", "x", "#", "%", "@");
+    //private static List<String> chars = Arrays.asList(" ", ".", "-", ":", "=", "+", "x", "#", "%", "@");
+    private static List<String> chars = Arrays.asList("@", "%", "#", "x", "+", "=", ":", "-", ".", " ");
     //private static List<String> chars = Arrays.asList(" ", ".", "-", ":", "=", "@");
 
     public static List<List<String>> convert(int size, String file, String outPath){
 
-        double range = 255.0 / chars.size();
-
-        BufferedImage image = null;
         try {
-            image = ImageIO.read(new File(file));
+            return convert(size, ImageIO.read(new File(file)));
         } catch (IOException e) {
         }
+
+        return null;
+
+    }
+
+    public static List<List<String>> convert(int size, BufferedImage image){
+
+        double range = 255.0 / chars.size();
 
         double w = 2 * size;
         double h = 3 * size;
@@ -52,6 +65,8 @@ public class ConversionUtil {
                 int[] rgb = getRGB(average);
 
                 int gray = (int)(rgb[0] * 0.2989 + rgb[1] * 0.5870 + rgb[2] * 0.1140);
+                // HIGHER GRAY IS BRIGHTER!!!!
+                gray /= 3;
 
                 int[] a = getRGB(image.getRGB((int) i, (int)j));
                 subList.add("<span style='color:rgb("+a[0]+","+a[1]+","+a[2]+");'>" + chars.get((int)(gray / range)) + "</span>");
@@ -69,13 +84,75 @@ public class ConversionUtil {
             list.add(subList);
         }
 
-        try {
-            ImageIO.write(image, "png", new File(outPath));
-        } catch (IOException e) {
-        }
-
         return list;
 
+    }
+
+    public static List<List<List<String>>> convertGif(int size, String file){
+
+        List<BufferedImage> images = convertGifBI(file);
+        List<List<List<String>>> text = new ArrayList<>();
+
+        images.forEach(i -> text.add(convert(size, i)));
+
+        return text;
+
+    }
+
+    public static List<BufferedImage> convertGifBI(String file){
+
+        List<BufferedImage> images = new ArrayList<>();
+
+        try {
+            String[] imageatt = new String[]{
+                    "imageLeftPosition",
+                    "imageTopPosition",
+                    "imageWidth",
+                    "imageHeight"
+            };
+
+            ImageReader reader = ImageIO.getImageReadersByFormatName("gif").next();
+            ImageInputStream ciis = ImageIO.createImageInputStream(new File(file));
+            reader.setInput(ciis, false);
+
+            int noi = reader.getNumImages(true);
+            BufferedImage master = null;
+
+            for (int i = 0; i < noi; i++) {
+                BufferedImage image = reader.read(i);
+                IIOMetadata metadata = reader.getImageMetadata(i);
+
+                Node tree = metadata.getAsTree("javax_imageio_gif_image_1.0");
+                NodeList children = tree.getChildNodes();
+
+                for (int j = 0; j < children.getLength(); j++) {
+                    Node nodeItem = children.item(j);
+
+                    if(nodeItem.getNodeName().equals("ImageDescriptor")){
+                        Map<String, Integer> imageAttr = new HashMap<>();
+
+                        for (int k = 0; k < imageatt.length; k++) {
+                            NamedNodeMap attr = nodeItem.getAttributes();
+                            Node attnode = attr.getNamedItem(imageatt[k]);
+                            imageAttr.put(imageatt[k], Integer.valueOf(attnode.getNodeValue()));
+                        }
+                        if(i == 0)
+                            master = new BufferedImage(imageAttr.get("imageWidth"), imageAttr.get("imageHeight"), BufferedImage.TYPE_INT_ARGB);
+                        master.getGraphics().drawImage(image, imageAttr.get("imageLeftPosition"), imageAttr.get("imageTopPosition"), null);
+                    }
+                }
+
+                BufferedImage bI = new BufferedImage(master.getWidth(), master.getHeight(), BufferedImage.TYPE_INT_ARGB);
+                bI.getGraphics().drawImage(master, 0, 0, null);
+                images.add(bI);
+
+                ImageIO.write(bI, "png", new File( "output/gif/" + i + ".png"));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return images;
     }
 
     private static int[] getRGB(int rgb){

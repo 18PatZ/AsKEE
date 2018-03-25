@@ -1,6 +1,8 @@
 package lah;
 
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -15,15 +17,19 @@ import javafx.scene.web.WebViewBuilder;
 import javafx.stage.Stage;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Window extends Application implements EventHandler<KeyEvent> {
 
-    public static String text = "";
+    public static List<String> text = new ArrayList<>();
     public static double zoom = 1;
 
     public double TITLE_HEIGHT = 40;
     public double WIDTH = 1920;
     public double HEIGHT = 1080 - TITLE_HEIGHT;
+
+    private WebView webView;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -42,7 +48,7 @@ public class Window extends Application implements EventHandler<KeyEvent> {
         stage.setScene(scene);
         stage.show();
 
-        stage.setResizable(false);
+        stage.setResizable(true);
         stage.setWidth(WIDTH);
         stage.setHeight(HEIGHT);
 
@@ -58,16 +64,37 @@ public class Window extends Application implements EventHandler<KeyEvent> {
         scene.setOnKeyPressed(this);
         scene.setOnKeyReleased(this);*/
 
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+
+                    int i = 0;
+
+                    @Override
+                    public void run() {
+                        i = (i + 1) % text.size();
+                        Platform.runLater(() -> setContent(i));
+                    }
+                },
+                100, 100
+        );
+
     }
 
     private WebView buildWebView()
     {
-        final WebView webView =
+        webView =
                 WebViewBuilder.create().prefHeight(HEIGHT).prefWidth(WIDTH).build();
-        webView.getEngine().loadContent("<code><span style=\"display:block;line-height:8px; font-size: 5px; white-space:pre;font-family: monospace;color: black; background: white;\">"
-        + text + "</span></code>");//.load(url);
+//        webView.getEngine().loadContent("<code><span style=\"display:block;line-height:8px; font-size: 5px; white-space:pre;font-family: monospace;color: black; background: white;\">"
+//        + text + "</span></code>");//.load(url);
+        setContent(0);
         webView.setZoom(zoom);
+
         return webView;
+    }
+
+    private void setContent(int i){
+        webView.getEngine().loadContent("<code><span style=\"display:block;line-height:8px; font-size: 12px; white-space:pre;font-family: monospace;color: black; background: #686868;\">"
+                + text.get(i) + "</span></code>");
     }
 
     @Override
