@@ -1,7 +1,5 @@
 package lah;
 
-import com.sun.imageio.plugins.gif.GIFImageReader;
-import com.sun.imageio.plugins.gif.GIFImageReaderSpi;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -22,10 +20,10 @@ public class ConversionUtil {
     private static List<String> chars = Arrays.asList("@", "%", "#", "x", "+", "=", ":", "-", ".", " ");
     //private static List<String> chars = Arrays.asList(" ", ".", "-", ":", "=", "@");
 
-    public static List<List<String>> convert(int size, String file, String outPath){
+    public static String convert(boolean color, double size, double gScale, String file, String outPath){
 
         try {
-            return convert(size, ImageIO.read(new File(file)));
+            return convert(color, size, gScale, ImageIO.read(new File(file)));
         } catch (IOException e) {
         }
 
@@ -33,7 +31,7 @@ public class ConversionUtil {
 
     }
 
-    public static List<List<String>> convert(int size, BufferedImage image){
+    public static String convert(boolean color, double size, double gScale, BufferedImage image){
 
         double range = 255.0 / chars.size();
 
@@ -43,11 +41,13 @@ public class ConversionUtil {
         double width = w * (image.getWidth() / w);
         double height = h * (image.getHeight() / h);
 
-        List<List<String>> list = new ArrayList<>();
+        //String ss = "";
+        StringBuilder b1 = new StringBuilder();
 
         for(double j = 0; j < height; j += h){
 
-            List<String> subList = new ArrayList<>();
+            //String s = "";
+            StringBuilder b2 = new StringBuilder();
 
             for(double i = 0; i < width; i += w){
                 //int[] rgb = getRGB(image.getRGB(i, j));
@@ -66,40 +66,43 @@ public class ConversionUtil {
 
                 int gray = (int)(rgb[0] * 0.2989 + rgb[1] * 0.5870 + rgb[2] * 0.1140);
                 // HIGHER GRAY IS BRIGHTER!!!!
-                gray /= 3;
+                gray /= gScale;
 
                 int[] a = getRGB(image.getRGB((int) i, (int)j));
-                subList.add("<span style='color:rgb("+a[0]+","+a[1]+","+a[2]+");'>" + chars.get((int)(gray / range)) + "</span>");
-                //subList.add(chars.get((int)(gray / range)));
+                b2.append ((!color ? "" : ("<span style='color:rgb("+a[0]+","+a[1]+","+a[2]+");'>")) + chars.get(Math.min((int)(gray / range), chars.size() - 1)) + (!color ? "" : "</span>"));
 
-                /*for(double ii = 0; ii < w; ii++) {
-                    for (double jj = 0; jj < h; jj++) {
-                        if(i + ii >= image.getWidth() || j + jj >= image.getHeight())
-                            break;
-                        image.setRGB((int)(i + ii), (int)(j + jj), getBinary(gray, gray, gray));
-                    }
-                }*/
             }
 
-            list.add(subList);
+            b1.append("\n" + b2.toString());
+            //ss += (ss.equals("") ? "" : "\n") + s;
+
         }
 
-        return list;
+        System.out.println("  IMAGE CONVERSION COMPLETE");
+
+        return b1.toString();
 
     }
 
-    public static List<List<List<String>>> convertGif(int size, String file){
+    public static List<String> convertGif(boolean color, double size, double gScale, int loopMax, int inc, String file){
 
-        List<BufferedImage> images = convertGifBI(file);
-        List<List<List<String>>> text = new ArrayList<>();
+        System.out.println("um hey");
 
-        images.forEach(i -> text.add(convert(size, i)));
+        List<BufferedImage> images = convertGifBI(loopMax, inc, file);
+        System.out.println(1);
+        List<String> text = new ArrayList<>();
+        System.out.println(2);
+
+        images.forEach(i -> text.add(convert(color, size, gScale, i)));
+        System.out.println(3);
+
+        System.out.println("CONVERSION COMPLETE");
 
         return text;
 
     }
 
-    public static List<BufferedImage> convertGifBI(String file){
+    public static List<BufferedImage> convertGifBI(int loopMax, int inc, String file){
 
         List<BufferedImage> images = new ArrayList<>();
 
@@ -118,7 +121,7 @@ public class ConversionUtil {
             int noi = reader.getNumImages(true);
             BufferedImage master = null;
 
-            for (int i = 0; i < noi; i++) {
+            for (int i = 0; i < (loopMax == -1 ? noi : Math.min(noi, loopMax)); i += inc) {
                 BufferedImage image = reader.read(i);
                 IIOMetadata metadata = reader.getImageMetadata(i);
 
@@ -146,7 +149,7 @@ public class ConversionUtil {
                 bI.getGraphics().drawImage(master, 0, 0, null);
                 images.add(bI);
 
-                ImageIO.write(bI, "png", new File( "output/gif/" + i + ".png"));
+                //ImageIO.write(bI, "png", new File( "output/gif/" + i + ".png"));
             }
         } catch (IOException e) {
             e.printStackTrace();

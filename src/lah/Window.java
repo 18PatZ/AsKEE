@@ -1,17 +1,13 @@
 package lah;
 
-import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.scene.web.WebView;
 import javafx.scene.web.WebViewBuilder;
 import javafx.stage.Stage;
@@ -24,6 +20,10 @@ public class Window extends Application implements EventHandler<KeyEvent> {
 
     public static List<String> text = new ArrayList<>();
     public static double zoom = 1;
+    public static int fontSize = 12;
+    public static String background = "#686868";
+    public static int loopMax = -1;
+    public static int period = 100;
 
     public double TITLE_HEIGHT = 40;
     public double WIDTH = 1920;
@@ -64,19 +64,23 @@ public class Window extends Application implements EventHandler<KeyEvent> {
         scene.setOnKeyPressed(this);
         scene.setOnKeyReleased(this);*/
 
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
+        if(text.size() > 1) {
+            new java.util.Timer().schedule(
+                    new java.util.TimerTask() {
 
-                    int i = 0;
+                        int i = 0;
 
-                    @Override
-                    public void run() {
-                        i = (i + 1) % text.size();
-                        Platform.runLater(() -> setContent(i));
-                    }
-                },
-                100, 100
-        );
+                        @Override
+                        public void run() {
+                            i = (i + 1) % text.size();
+                            if (loopMax != -1 && i >= loopMax)
+                                i = 0;
+                            Platform.runLater(() -> setContent(i));
+                        }
+                    },
+                    period, period
+            );
+        }
 
     }
 
@@ -93,7 +97,7 @@ public class Window extends Application implements EventHandler<KeyEvent> {
     }
 
     private void setContent(int i){
-        webView.getEngine().loadContent("<code><span style=\"display:block;line-height:8px; font-size: 12px; white-space:pre;font-family: monospace;color: black; background: #686868;\">"
+        webView.getEngine().loadContent("<code><span style=\"display:block;line-height:8px; font-size: " + fontSize + "px; white-space:pre;font-family: monospace;color: black; background: " + background + ";\">"
                 + text.get(i) + "</span></code>");
     }
 

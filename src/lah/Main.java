@@ -2,96 +2,85 @@ package lah;
 
 import javafx.application.Application;
 
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.util.*;
+import java.util.Arrays;
 import java.util.List;
 
 public class Main {
 
     public static void main(String[] args){
+        // 0-3
 
-//        Scanner scanner = new Scanner(System.in);
-//
-//        HashSet<String> h = new HashSet<>();
-//        while(scanner.hasNextLine()){
-//            String l = scanner.nextLine();
-//            if(l.contains("END")) break;
-//            for(int i = 0; i < l.length(); i++)
-//                h.add(l.substring(i, i+1));
-//        }
-//
-//        h.forEach(System.out::println);
-//
-//
-//
-//        if(true) return;
+        runDemo(4);
+    }
 
-//        ConversionUtil.convert("input/lah.gif");
-//        if(true) return;
+    private static void runDemo(int demo){
 
-//        if(true) {
-//            String ss = "";
-//            for (List<String> l : ConversionUtil.convertGif(1, "input/lah.gif").get(0)) {
-//                String s = "";
-//                for (String s1 : l)
-//                    s += s1;
-//                ss += (ss.equals("") ? "" : "\n") + s;
-//                //System.out.println(s);
-//            }
-//
-//            Window.text = Arrays.asList(ss);
-//            Application.launch(Window.class);
-//
-//            return;
-//        }
+        if(demo == 0) {
+            Window.text = Arrays.asList(ConversionUtil.convert(true, 1, 5, "input/pepe.jpg", "output/pepe.png"));
+            Window.zoom = 1;
+            Window.fontSize = 12;
+            Window.background = "white";
+            Application.launch(Window.class);
 
-
-        List<String> text = new ArrayList<>();
-
-        for(List<List<String>> l1 : ConversionUtil.convertGif(1, "input/lah.gif")){
-            String ss = "";
-
-            for (List<String> l : l1) {
-                String s = "";
-                for (String s1 : l)
-                    s += s1;
-                ss += (ss.equals("") ? "" : "\n") + s;
-            }
-
-            text.add(ss);
         }
+        else if(demo == 1) {
 
-        Window.text = text;
-        Application.launch(Window.class);
+            Window.text = Arrays.asList(ConversionUtil.convert(true, 1, 6, "input/lah.png", "output/lah.png"));
+            Window.zoom = 0.6;
+            Window.fontSize = 12;
+            Window.background = "white";
+            Application.launch(Window.class);
 
-        if(true) return;
-
-
-        String file = "social-media";
-
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        //clipboard.setContents(sel, sel);
-
-        String ss = "";
-
-        for (List<String> l : ConversionUtil.convert(1,"input/" + file + ".jpg", "output/" + file + ".png")) {
-            String s = "";
-            for (String s1 : l)
-                s += s1;
-            ss += (ss.equals("") ? "" : "\n") + s;
-            //System.out.println(s);
         }
+        else if(demo == 2) {
+            Window.text = ConversionUtil.convertGif(true, 1, 5, 55, 1, "input/lah.gif");
+            Window.fontSize = 12;
+            Window.background = "#a8a8a8";//"#686868";
+            Window.loopMax = 55;
+            Window.period = 50;
+            Application.launch(Window.class);
+        }
+        else if(demo == 3) {
+            Window.text = ConversionUtil.convertGif(true, 1, 5, -1, 1, "input/nyan.gif");
+            Window.zoom = 1;
+            Window.fontSize = 8;
+            Window.background = "black";
+            Window.period = 30;
+            Application.launch(Window.class);
+        }
+        else if(demo == 4) {
+            Window.text = ConversionUtil.convertGif(true, 1, 5, -1, 1, "input/tumblr.gif");
+            Window.zoom = 0.5;
+            Window.fontSize = 8;
+            Window.background = "black";
+            Window.period = 30;
+            Application.launch(Window.class);
+        }
+        else if(demo == 5) {
 
-        /*StringSelection sel = new StringSelection("<code><span style=\"display:block;line-height:8px; font-size: 4px; font-weight:bold;white-space:pre;font-family: monospace;color: black; background: white;\">"
-                + ss + "</span></code>");
+            Window.text = ConversionUtil.convertGif(true, 2, 5, -1, 1, "input/lah2.gif");
+            Window.zoom = 0.5;
+            Window.fontSize = 5;
+            Window.background = "#a8a8a8";//"#686868";
+            Window.loopMax = -1;
+            Window.period = 50;
+            Application.launch(Window.class);
 
-        clipboard.setContents(sel, sel);*/
+        }
+        else if(demo == 6) {
+            Window.text = Arrays.asList(ConversionUtil.convert(false, 1, 0.5, "input/lah3.png", "output/lah3.png"));
+            Window.zoom = 0.2;
+            Window.fontSize = 5;
+            Window.background = "white";
+            Application.launch(Window.class);
+        }
+    }
 
-        //Window.text = ss;
-        Window.zoom = 0.3;
-        Application.launch(Window.class);
+    private static String concat(List<String> l){
+        String s = "";
+        for (String s1 : l)
+            s += s1;
+        return s;
     }
 
 }
