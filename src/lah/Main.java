@@ -8,9 +8,9 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args){
-        // 0-3
+        // 0-3, 7
 
-        runDemo(4);
+        runDemo(7);
     }
 
     private static void runDemo(int demo){
@@ -72,6 +72,21 @@ public class Main {
             Window.zoom = 0.2;
             Window.fontSize = 5;
             Window.background = "white";
+            Application.launch(Window.class);
+        }
+        else if(demo == 7) {
+            Window.text = Arrays.asList(ConversionUtil.convert(true, 4, 8, "input/dawae.png", "output/dawae.png"));
+            Window.zoom = 0.5;
+            Window.fontSize = 12;
+            Window.background = "white";
+            Application.launch(Window.class);
+        }
+        else if(demo == 8) {
+            Window.text = ConversionUtil.convertGif(true, 1, 5, -1, 1, "input/junnk.gif");
+            Window.zoom = 1;
+            Window.fontSize = 10;
+            Window.background = "black";
+            Window.period = 10;
             Application.launch(Window.class);
         }
     }
